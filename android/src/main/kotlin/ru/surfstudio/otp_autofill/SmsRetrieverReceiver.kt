@@ -13,7 +13,8 @@ class SmsRetrieverReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
 
-        if (intent?.action == SmsRetriever.SMS_RETRIEVED_ACTION) {
+        try{
+            if (intent?.action == SmsRetriever.SMS_RETRIEVED_ACTION) {
 
             val extras = intent.extras
             val smsRetrieverStatus = extras?.get(SmsRetriever.EXTRA_STATUS) as Status
@@ -33,6 +34,10 @@ class SmsRetrieverReceiver : BroadcastReceiver() {
                     }
                 }
             }
+        }
+        }
+        catch(e: Exception){
+
         }
     }
 

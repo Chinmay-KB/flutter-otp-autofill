@@ -47,9 +47,14 @@ public class OTPPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Activi
     private var activity: Activity? = null
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        try{
         context = flutterPluginBinding.applicationContext
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, channelName)
         channel.setMethodCallHandler(this);
+        }
+        catch(e: Exception){
+
+        }
     }
 
     companion object {
@@ -58,16 +63,22 @@ public class OTPPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Activi
 
         @JvmStatic
         fun registerWith(registrar: Registrar) {
+            try{
             context = registrar.context()
             val channel = MethodChannel(registrar.messenger(), channelName)
             val plugin = OTPPlugin()
             channel.setMethodCallHandler(plugin)
             registrar.addActivityResultListener(plugin)
+            }
+            catch(e: Exception){
+
+            }
         }
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-        when (call.method) {
+        try{
+            when (call.method) {
             startListenRetriever -> {
                 listenRetriever(result)
             }
@@ -89,10 +100,15 @@ public class OTPPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Activi
             }
             else -> result.notImplemented()
         }
+        }
+        catch(e: Exception){
+
+        }
     }
 
     private fun showNumberHint(result: Result) {
-        lastResult = result
+        try{
+            lastResult = result
         if (activity != null) {
             val hintRequest = HintRequest.Builder()
                     .setPhoneNumberIdentifierSupported(true)
@@ -105,6 +121,10 @@ public class OTPPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Activi
                     null, 0, 0, 0
             )
         }
+        }
+        catch(e: Exception){
+
+        }
 
     }
 
@@ -113,7 +133,8 @@ public class OTPPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Activi
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
-        when (requestCode) {
+        try{
+            when (requestCode) {
             smsConsentRequest ->
                 // Obtain the phone number from the result
                 if (resultCode == Activity.RESULT_OK && data != null) {
@@ -128,12 +149,21 @@ public class OTPPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Activi
                 lastResult?.success(credential?.id)
             }
         }
+        }
+        catch(e: Exception){
+
+        }
         return true
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        this.activity = binding.activity
-        binding.addActivityResultListener(this)
+        try{
+            this.activity = binding.activity
+            binding.addActivityResultListener(this)
+        }
+        catch(e: Exception){
+
+        }
     }
 
     private fun listenUserConsent(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -149,16 +179,22 @@ public class OTPPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Activi
     }
 
     private fun listenRetriever(@NonNull result: Result) {
-        if (activity != null) {
+        try{
+            if (activity != null) {
             lastResult = result
             val client = SmsRetriever.getClient(activity!!)
             val task = client.startSmsRetriever()
             task.addOnSuccessListener { registerSmsRetrieverBroadcastReceiver() }
         }
+        }
+        catch(e: Exception){
+
+        }
     }
 
     private fun registerSmsUserConsentBroadcastReceiver() {
-        smsUserConsentBroadcastReceiver = SmsUserConsentReceiver().also {
+        try{
+            smsUserConsentBroadcastReceiver = SmsUserConsentReceiver().also {
             it.smsBroadcastReceiverListener = object : SmsUserConsentReceiver.SmsUserConsentBroadcastReceiverListener {
                 override fun onSuccess(intent: Intent?) {
                     intent?.let { context -> activity?.startActivityForResult(context, smsConsentRequest) }
@@ -172,10 +208,15 @@ public class OTPPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Activi
 
         val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
         this.activity?.registerReceiver(smsUserConsentBroadcastReceiver, intentFilter, SmsRetriever.SEND_PERMISSION, null)
+        }
+        catch(e: Exception){
+
+        }
     }
 
     private fun registerSmsRetrieverBroadcastReceiver() {
-        smsRetrieverBroadcastReceiver = SmsRetrieverReceiver().also {
+        try{
+            smsRetrieverBroadcastReceiver = SmsRetrieverReceiver().also {
             it.smsBroadcastReceiverListener = object : SmsRetrieverReceiver.SmsRetrieverBroadcastReceiverListener {
                 override fun onSuccess(sms: String?) {
                     sms?.let { it -> lastResult?.success(it) }
@@ -189,10 +230,15 @@ public class OTPPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Activi
 
         val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
         this.activity?.registerReceiver(smsRetrieverBroadcastReceiver, intentFilter)
+        }
+        catch(e: Exception){
+
+        }
     }
 
     private fun unRegisterBroadcastReceivers() {
-        if (smsUserConsentBroadcastReceiver != null) {
+        try{
+            if (smsUserConsentBroadcastReceiver != null) {
             activity?.unregisterReceiver(smsUserConsentBroadcastReceiver)
             smsUserConsentBroadcastReceiver = null
         }
@@ -200,11 +246,20 @@ public class OTPPlugin : FlutterPlugin, MethodCallHandler, PluginRegistry.Activi
             activity?.unregisterReceiver(smsRetrieverBroadcastReceiver)
             smsRetrieverBroadcastReceiver = null
         }
+        }
+        catch(e: Exception){
+
+        }
     }
 
     override fun onDetachedFromActivity() {
-        unRegisterBroadcastReceivers()
+        try{
+            unRegisterBroadcastReceivers()
         activity = null
+        }
+        catch(e: Exception){
+
+        }
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
